@@ -124,8 +124,9 @@ if(length(grep(y.name, hl.params)) > 0){
 }
 
 # run & flow file & derived info
-flow.dir <- "D:/hank/btsync/hank_work/synoptic/data/misc/daily_flows/"
-flow.fn <- "daily_start_flows02.csv"
+#flow.dir <- "D:/hank/btsync/hank_work/synoptic/data/misc/daily_flows/"
+flow.dir <- "D:/hank/Dropbox/_research_working_branch/synoptic_EST_archive/data/user_def-misc/daily_synoptic_info/"
+flow.fn <- "daily_start_flows03.csv"
 flow.fullfn <- paste(flow.dir, flow.fn, sep = "")
 
 flow.headers <- read.table(flow.fullfn, sep = ",", as.is = T, nrow = 2)
@@ -145,7 +146,7 @@ flow.dates.str2 <- strftime(flow.dates, format = "%Y%m%d")
 flows.cfs <- flow.dat2[, "flow_cfs"]
 
 # synoptic file directories & names
-sensor.dir1 <- "D:/hank/btsync/hank_work/synoptic/data/sensor/"
+sensor.dir1 <- "D:/hank/Dropbox/_research_working_branch/synoptic_EST_archive/data/sensed-synoptic/"
 sensor.dir2 <- paste(sensor.dir1, flow.dates.str2, "-synoptic/organized/", 
                      sep = "")
 
@@ -156,7 +157,7 @@ sensor.fullfns <- paste(sensor.dir2, sensor.fns, sep = "")
 
 # output file directories & names
 spacing.str <- sprintf("%04.f", spacing) 
-out.dir1 <- paste("D:/hank/btsync/hank_work/synoptic/data/analysis/slopes/segments_", 
+out.dir1 <- paste("D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/analysis/slopes/segments_",
                   processing.id, "/most_recent/", sep = "")
 
 out.fns <- paste(flow.dates.str2, "-slopes_seg", spacing.str, "_", y.name, 
@@ -168,7 +169,7 @@ xlsx.fn <- paste(strftime(Sys.Date(), "%Y%m%d"), "-synoptic_slopes_all-",
 xlsx.fullfn <- paste(out.dir1, xlsx.fn, sep = "")
 
 # logfile location
-log.dir <- "D:/hank/btsync/hank_work/synoptic/data/processing_logfiles/"
+log.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/processing_logfiles/"
 today.date.str <- strftime(Sys.Date(), "%Y%m%d")
 log.fn.suffix <- "_synopticSlopes_logfile.txt"
 log.fn <- paste(today.date.str, log.fn.suffix, sep = "")
