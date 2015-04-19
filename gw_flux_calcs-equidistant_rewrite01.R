@@ -28,7 +28,7 @@ trend.methods <- c("endpt", "lin", "sens", "siegel", "piecewise")
 special.q47 <- F
 
 # condition that sets
-zero.neg.qg <- F
+zero.neg.qg <- T
 
 # model discretization
 spacing <- 1000
@@ -92,8 +92,7 @@ out.colnames <- c("start_seg_riverm",
 mass.flux.conversion <- 0.65/1000
 
 # ===== FILE MAPPING AND INITIAL FILE HANDLING =====
-out.dir1 <- "D:/hank/btsync/hank_work/synoptic/data/analysis/gw_flux-model/"
-
+out.dir1 <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/analysis/gw_flux-model/"
 analysis.date <- strftime(Sys.Date(), "%Y%m%d")
 
 out.dir2 <- paste(out.dir1, analysis.date, "-spacing_", spacing, "/", sep = "")
@@ -124,6 +123,7 @@ daily.flows.str <- sprintf("%04.f", daily.flows)
 
 # major canals file
 large.structs.fullfn <- "D:/hank/btsync/hank_work/synoptic/data/misc/important_spatial_features/large_structures-gpsRDist.csv"
+large.structs.fullfn <- "D:/hank/Dropbox/_research_working_branch/synoptic_EST_archive/data/user_def-misc/spatial_features/large_structures-gpsRDist.csv"
 large.structs.dat <- read.table(large.structs.fullfn, sep = ",", as.is = T,
                                 header = T)
 
