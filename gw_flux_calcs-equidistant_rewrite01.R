@@ -15,7 +15,7 @@ library(xlsx)
 param <- "SpCond"
 
 # closest, avg, or idw for estimating GW, typically closest is fine
-spatial.methods <- c("closest", "avg", "idw")
+spatial.methods <- c("interp", "closest", "avg", "idw")
 
 # temporal methods finding the closest to sample frame or average per unique 
 # well
@@ -100,8 +100,7 @@ out.dir2 <- paste(out.dir1, analysis.date, "-spacing_", spacing, "/", sep = "")
 dir.create(out.dir2, showWarnings = F)
 
 # flow and date file
-flow.fullfn <- "D:/hank/btsync/hank_work/synoptic/data/misc/daily_flows/daily_start_flows02.csv"
-flow.fullfn <- "D:/hank/Dropbox/_research_working_branch/synoptic_EST_archive/data/user_def-misc/daily_synoptic_info/daily_flows-by_flow03.csv"
+flow.fullfn <- "D:/hank/Dropbox/_research_working_branch/synoptic_EST_archive/data/user_def-misc/daily_synoptic_info/daily_start_flows03.csv"
 
 # reading daily flow info
 flow.headers <- read.table(flow.fullfn, sep = ",", as.is = T, nrow = 2)
@@ -122,27 +121,35 @@ run.strdates2 <- strftime(run.dates, format = "%m/%d/%Y")
 daily.flows.str <- sprintf("%04.f", daily.flows)
 
 # major canals file
-large.structs.fullfn <- "D:/hank/btsync/hank_work/synoptic/data/misc/important_spatial_features/large_structures-gpsRDist.csv"
 large.structs.fullfn <- "D:/hank/Dropbox/_research_working_branch/synoptic_EST_archive/data/user_def-misc/spatial_features/large_structures-gpsRDist.csv"
 large.structs.dat <- read.table(large.structs.fullfn, sep = ",", as.is = T,
                                 header = T)
 
-gw.closest.sc.fullfn <- "D:/hank/btsync/hank_work/synoptic/data/groundwater/20150302-gw_spcond/20150303-well_SC_to_river_segments-closest.csv"  
+# gw sc well data
+gw.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/analysis/groundwater/20150302-gw_spcond/"
+
+gw.closest.sc.fn <- "20150303-well_SC_to_river_segments-closest.csv" 
+gw.closest.sc.fullfn <- paste(gw.dir, gw.closest.sc.fn, sep = "")
 gw.closest.sc.dat <- read.table(gw.closest.sc.fullfn, sep = ",", as.is = T, 
                                 header = T)
 
-gw.avgidw.sc.fullfn <- "D:/hank/btsync/hank_work/synoptic/data/groundwater/20150302-gw_spcond/20150303-well_SC_to_river_segments-closest_n3-avg_idw.csv"
+gw.avgidw.sc.fn <- "20150303-well_SC_to_river_segments-closest_n3-avg_idw.csv"
+gw.avgidw.sc.fullfn <- paste(gw.dir, gw.avgidw.sc.fn, sep = "")
 gw.avgidw.sc.dat <- read.table(gw.avgidw.sc.fullfn, sep = ",", as.is = T, 
                                header = T)
 
+gw.interp.sc.fn <- "20150320-well_SC_to_river_segments-interp_avg.csv"
+gw.interp.sc.fullfn <- paste(gw.dir, gw.interp.sc.fn, sep = "")
+gw.interp.sc.dat <- read.table(gw.interp.sc.fullfn, sep = ",", as.is = T, 
+                               header = T)
+
 # stats directory
-gw.dir <- gw.dir <- "D:/hank/btsync/hank_work/synoptic/data/groundwater/20150302-gw_spcond/"
 gw.stats.fn <- "20150130-unique_well_SC_stats-buffer5000-n5.csv"
 gw.stats.fullfn <- paste(gw.dir, gw.stats.fn, sep = "")
 gw.stats.dat <- read.table(gw.stats.fullfn, sep = ",", as.is = T, header = T)
 
 # slopes directory
-slopes.dir1 <- paste("D:/hank/btsync/hank_work/synoptic/data/analysis/slopes/segments_",
+slopes.dir1 <- paste("D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/analysis/slopes/segments_",
                      processing.step, "/",
                      param, "/",
                      "seg", spacing, "/", sep = "")
@@ -153,7 +160,7 @@ slopes.fullfns <- paste(slopes.dir1, slopes.fns, sep = "")
 # ===== LOOPS =====
 ByReach <- function(index, slopes.dat, slope.name, ustream.name, dstream.name, 
                     ustream.error.name, dstream.error.name, gw.dat, riv.longlat,
-                    gw.name, gw.error.name, start.flow){
+                    gw.name, gw.error.name, start.flow, spatial.method){
 
   start.riverm <- slopes.dat[index, "start_seg_m"]
   end.riverm <- slopes.dat[index, "end_seg_m"]
@@ -165,17 +172,32 @@ ByReach <- function(index, slopes.dat, slope.name, ustream.name, dstream.name,
   C.u <- slopes.dat[index, ustream.name]
   C.d <- slopes.dat[index, dstream.name]
   
-  # assign well data
-  gw.id <- which.min(abs(start.riverm - gw.dat[, "riverm_seq"]))
-  C.g <- gw.dat[gw.id, gw.name]
-  well.name <- gw.dat[gw.id, "well_name"]
+
   
-  gw.stats.id <- which(gw.stats.dat[, "well_name"] == well.name)
-  if (length(gw.stats.id) > 0) {
-    gw.stats.cv <- gw.stats.dat[gw.stats.id, "sc_coeffvar"]
+  # assign well data
+  if (spatial.method == "interp") {
+    riverm.name <- "start_riverm"  
   } else{
-    gw.stats.cv <- NA
+    riverm.name <- "riverm_seq"  
+  } 
+  
+  gw.id <- which.min(abs(start.riverm - gw.dat[, riverm.name]))
+  C.g <- gw.dat[gw.id, gw.name]
+  
+  if (spatial.method == "interp") {
+    gw.stats.cv <- NA  
+  } else {
+    well.name <- gw.dat[gw.id, "well_name"]
+    
+    gw.stats.id <- which(gw.stats.dat[, "well_name"] == well.name)
+    if (length(gw.stats.id) > 0) {
+      gw.stats.cv <- gw.stats.dat[gw.stats.id, "sc_coeffvar"]
+    } else{
+      gw.stats.cv <- NA
+    }
   }
+  
+  #browser()
   
   well.dist <- gw.dat[gw.id, "dist_to_start_seg_m"]
   riv.coord <- riv.longlat[gw.id, ]
@@ -311,6 +333,7 @@ ByRun <- function(index, trend.method, time.method, spatial.method, gw.dat,
   daily.flow <- daily.flows[index]
   daily.flow.str <- daily.flows.str[index]
   
+  
   #count <- 0
   iter <<- 0
   by.reach <- mapply(ByReach, 1:(nrow(slopes.dat)), 
@@ -324,9 +347,12 @@ ByRun <- function(index, trend.method, time.method, spatial.method, gw.dat,
                                      riv.longlat = riv.longlat,
                                      gw.name = gw.name,
                                      gw.error.name = gw.error.name,
-                                     start.flow = start.flow),
+                                     start.flow = start.flow,
+                                     spatial.method = spatial.method),
                      SIMPLIFY = F)
   
+  
+
   mod.estimates <- do.call(rbind, by.reach)
   
   date.col <- rep(run.strdate2, nrow(mod.estimates))
@@ -348,7 +374,7 @@ ByRun <- function(index, trend.method, time.method, spatial.method, gw.dat,
   
   if (zero.neg.qg == T) {
     out.fn2 <- paste(out.fn1, "-negQg0.csv", sep = "")  
-    xlsx.fn2 <- paste(xlsx.fn2, "-negQg0.xlsx", sep = "")
+    xlsx.fn2 <- paste(xlsx.fn1, "-negQg0.xlsx", sep = "")
   } else{
     out.fn2 <- paste(out.fn1, ".csv" , sep = "")  
     xlsx.fn2 <- paste(xlsx.fn1, ".xlsx", sep = "")
@@ -398,6 +424,7 @@ ByTrendMethod <- function(index, time.method, spatial.method, gw.dat,
     dstream.error.name <- NA
   }
     
+
   by.run <- mapply(ByRun, 1:length(slopes.fullfns),
                    MoreArgs = list(trend.method = trend.method,
                                    time.method = time.method,
@@ -427,6 +454,8 @@ ByTimeMethod <- function(index, spatial.method, gw.dat, riv.longlat, gw.names,
     gw.error.name <- gw.error.names[2]
   }
   
+
+  
   by.trend.method <- mapply(ByTrendMethod, 1:length(trend.methods), 
                             MoreArgs = list(time.method = time.method,
                                             spatial.method = spatial.method,
@@ -455,6 +484,10 @@ BySpMethod <- function(index){
     gw.dat1 <- gw.avgidw.sc.dat
     gw.names <- c("t_closest_gw_SC_idw", "t_avg_gw_SC_idw")
     gw.error.names <- c(NA, NA)    
+  } else if (spatial.method == "interp") {
+    gw.dat1 <- gw.interp.sc.dat
+    gw.names <- c("gw_SC", "gw_SC")
+    gw.error.names <- c("gw_SC_sd", NA)
   }
     
   riv.xy <- cbind(gw.dat1[, "river_seg_E"], gw.dat1[, "river_seg_N"])
@@ -463,7 +496,7 @@ BySpMethod <- function(index){
   riv.transform <- spTransform(riv.spatial.pts, CRS("+proj=longlat"))
   riv.longlat <- as.data.frame(riv.transform)
   colnames(riv.longlat) <- c("Longitude", "Latitude")
-  
+
   by.t.methods <- mapply(ByTimeMethod, 1:length(time.methods),
                          MoreArgs = list(spatial.method = spatial.method,
                                          gw.dat = gw.dat1,
