@@ -126,7 +126,7 @@ large.structs.dat <- read.table(large.structs.fullfn, sep = ",", as.is = T,
                                 header = T)
 
 # gw sc well data
-gw.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/analysis/groundwater/20150302-gw_spcond/"
+gw.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/auxilary/groundwater/20150302-gw_spcond/"
 
 gw.closest.sc.fn <- "20150303-well_SC_to_river_segments-closest.csv" 
 gw.closest.sc.fullfn <- paste(gw.dir, gw.closest.sc.fn, sep = "")

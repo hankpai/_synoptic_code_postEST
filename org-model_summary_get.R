@@ -17,26 +17,33 @@ rm(list=ls(all=TRUE))
 
 library(xlsx)
 
-output.vars <- c("Q_dstream", "se_Q_gw","se_Q_gw_noCg")
+# Q_dstream, Q_gw, se_Q_gw, se_Q_gw_noCg
+output.vars <- c("Q_gw", "Q_dstream", "se_Q_gw", "se_Q_gw_noCg")
 run.ids <- 1:13
 spacing <- 1000
-model.output.date <- "20150305"
+model.output.date <- "20150419"
 daily.flow.col <- 3
+zero.neg.qg <- T
+
+
+# values from Phillips et al. modeling study
+riv.range <- c(31000, 23000)
+riv.range <- "all"
 
 is.laptop <- F
 
-spatial.methods <- c("closest", "avg", "idw")
+spatial.methods <- c("interp", "closest", "avg", "idw")
 time.methods <- c("closest", "avg")
 trend.methods <- c("endpt", "lin", "sens", "siegel", "piecewise")
 
 if (is.laptop) {
-  dir1 <- "C:/Users/Hank/BTsync/"  
+  dir1 <- "C:/Users/Hank/Dropbox/"
 } else{
-  dir1 <- "D:/hank/btsync/hank_work/"
+  dir1 <- "D:/hank/Dropbox/"
 }
 
 mod.dir2 <- paste(dir1,
-                  "synoptic/data/analysis/gw_flux-model/",
+                  "_research_working_branch/_synoptic_postEST/data/analysis/gw_flux-model/",
                   model.output.date, "-spacing_", spacing, "/",
                   sep = "")
 
@@ -46,7 +53,7 @@ analysis.date <- strftime(Sys.Date(), "%Y%m%d")
 
 # flow and date file
 flow.fullfn <- paste(dir1, 
-                     "synoptic/data/misc/daily_flows/daily_start_flows03.csv",
+                     "_research_working_branch/synoptic_EST_archive/data/user_def-misc/daily_synoptic_info/daily_start_flows03.csv",
                      sep = "")
 
 # reading daily flow info
@@ -67,8 +74,22 @@ run.strdates2 <- strftime(run.dates, format = "%m/%d/%Y")
 daily.flows.str <- sprintf("%04.f", daily.flows)
 
 # output names
-xlsx.fn <- paste(analysis.date, "-Qd_and_errors-summary.xlsx", sep = "")
-xlsx.fullfn <- paste(mod.dir2, xlsx.fn, sep = "")
+
+if (riv.range[1] == "all") {
+  riv.nameid <- "all-segs"
+} else {
+  riv.range.km <- riv.range/1000
+  riv.nameid1 <- paste(riv.range.km, collapse = "_")
+  
+  riv.nameid <- paste("segs", riv.nameid1, sep = "")
+}
+
+out.dir1 <- paste(mod.dir2, "_mod_summary/", sep = "")
+
+xlsx.fn <- paste(analysis.date, "-Qg_and_errors-", riv.nameid, "summary.xlsx", 
+                 sep = "")
+
+xlsx.fullfn <- paste(out.dir1, xlsx.fn, sep = "")
 
 # ===== LOOPS ====
 
@@ -77,14 +98,40 @@ ByRun <- function(index, dir.name, output.var){
   run.strdate1 <- run.strdates1[index]
   
   mod.dir <- paste(mod.dir2, dir.name, "/", sep = "")
-  mod.fn <- paste("Q", daily.flow.str, "_", run.strdate1, "-gwmodel-", dir.name, 
-                  ".csv", sep ="")
+  mod.fn1 <- paste("Q", daily.flow.str, "_", run.strdate1, "-gwmodel-", 
+                   dir.name, sep ="")
+  
+  if (zero.neg.qg == T) {
+    mod.fn <- paste(mod.fn1, "-negQg0.csv", sep = "")  
+  } else{
+    mod.fn <- paste(mod.fn1, ".csv", sep = "")  
+  }
   
   mod.fullfn <- paste(mod.dir, mod.fn, sep = "")
 
   mod.dat <- read.table(mod.fullfn, sep = ",", as.is = T, header = T)
+
   
-  out.dat <- mod.dat[, output.var]
+  
+  if (riv.range[1] == "all") {
+    out.dat <- mod.dat[, output.var]
+  } else {
+    start.seg <- riv.range[1]
+    end.seg <- riv.range [2]
+    
+    #browser()
+    riv.id1 <- which(mod.dat[, "start_seg_riverm"] <= start.seg)
+    riv.id2 <- which(mod.dat[, "end_seg_riverm"] >= end.seg)
+    riv.id3 <- intersect(riv.id1, riv.id2)
+    
+    out.dat <- mod.dat[riv.id3, output.var]
+    
+  }
+  
+
+  
+  # right now, output includes Q_d, Q_g, and error associated with each
+  # if all segments are considered, Q_d = last Q_d
   
   if (output.var == "Q_dstream"){
     end.riverm <- mod.dat[, "end_seg_riverm"]
@@ -93,8 +140,12 @@ ByRun <- function(index, dir.name, output.var){
     find.last.id <- which.min(end.riverm[find.not.na])
     
     return.dat <- out.dat[find.not.na[find.last.id]]
+  } else if (output.var == "Q_gw") {
+    return.dat <- sum(out.dat, na.rm = T)
+    
   } else{
     # error propagation output variables
+    # error for both Qg and Qd, since Qu error is unreported
     
     square.terms <- out.dat^2
     sum.terms <- sum(square.terms, na.rm = T)
@@ -161,19 +212,20 @@ ByOutputVars <- function(index){
   colnames(organized.dat3) <- c("run_id", "daily_flows_cfs", "run_date", 
                                 organized.dat1[1, ])
   
-  out.dat <- as.data.frame(organized.dat3)
-  
+  out.dat <- as.data.frame(organized.dat3)  
+
   if (output.var == "se_Q_gw") {
     # Qgw errors are now propagated to Qd error
-    out.name <- "se_Qd"  
+    out.name <- "se_Qg"  
   } else if (output.var == "se_Q_gw_noCg") {
-    out.name <- "se_Qd_noCg"  
+    out.name <- "se_Qg_noCg"  
   } else{
     out.name <- output.var  
   }
   
-  out.fn <- paste(analysis.date, "-", out.name, "-summary.csv", sep = "")
-  out.fullfn <- paste(mod.dir2, out.fn, sep = "")
+  out.fn <- paste(analysis.date, "-", out.name, "-", riv.nameid, "-summary.csv",
+                  sep = "")
+  out.fullfn <- paste(out.dir1, out.fn, sep = "")
   
   if (index == 1) {
     append.val = F
