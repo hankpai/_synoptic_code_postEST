@@ -4,25 +4,25 @@ rm(list=ls(all=TRUE))
 
 save.img <- T
 
-#mod.ids <- c("trend_piecewise-sp_closest-t_closest",
-#             "trend_piecewise-sp_avg-t_closest",
-#             "trend_piecewise-sp_interp-t_closest")
-
-mod.ids <- c("trend_endpt-sp_interp-t_closest",
-             "trend_lin-sp_interp-t_closest",
+mod.ids <- c("trend_piecewise-sp_closest-t_closest",
+             "trend_piecewise-sp_avg-t_closest",
              "trend_piecewise-sp_interp-t_closest")
 
+#mod.ids <- c("trend_endpt-sp_interp-t_closest",
+#             "trend_lin-sp_interp-t_closest",
+#             "trend_piecewise-sp_interp-t_closest")
 
 
-#legend.info <- c("closest", "avg", "interp")
-legend.info <- c("endpt", "lin", "piecewise")
+
+legend.info <- c("closest", "avg", "interp")
+#legend.info <- c("endpt", "lin", "piecewise")
 
 pts.pch <- 19
 pts.cex <- 1.1
 
 # if different spatial, will need multiple GW drawn on, otherwise should compare
 # different trends
-diff.sp <- F
+diff.sp <- T
              
 second.val.on <- T
              
@@ -54,6 +54,7 @@ y.major.ticks <- seq(0, y.limits[2], y.major.interval)
 # for secondary y-axis
 if (diff.sp == T){
   second.limits <- c(100, 2700)
+  second.limits <- c(100, 1700)
   second.minor.interval <- 200
   second.major.interval <- 800
 } else{
@@ -122,7 +123,7 @@ run.dates <- strptime(run.dat[, 2], format = flow.headers[2, 2])
 run.strdates <- strftime(run.dates, format = "%Y%m%d")
 plot.strdates <- strftime(run.dates, format = "%m-%d-%y")
 
-mod.date <- "20150419"
+mod.date <- "20150422"
 mod.spacing <- 1000
 
 mod.dir1 <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/analysis/gw_flux-model/"

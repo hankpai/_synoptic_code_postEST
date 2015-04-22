@@ -7,7 +7,7 @@ save.img <- T
 run.ids <- c(1:13)
 
 # type of regression for the calculation
-regression.method <- "piecewise"
+regression.method <- "lin"
 
 
 spatial.method <- "interp"
@@ -15,7 +15,7 @@ temporal.method <- "closest"
 
 
 # defining model output folders, changes between binned and distributed
-processing.datestr <- "20150419"
+processing.datestr <- "20150422"
 
 # "Q_g" for 1k plots, "avg_Q_g" for binned plots, conc_diff, tds_gw_kgs
 val.plotted <- "Q_gw"

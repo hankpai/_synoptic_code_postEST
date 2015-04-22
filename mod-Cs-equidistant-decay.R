@@ -1,22 +1,16 @@
-#---
-#title: "C_d estimates from 1-d linked river network mixing model"
-#author: hank
-#---
+# title: C_d (or river C) estimates from 1-d linked river network mixing model
+# author: hank
 
 # Forward modeling system to find C_d, the downstream concentration to compare 
 # with observed synoptic data.  Many sources of errors can be attributed to the
 # GW water quality estimates.
 
-
-#```{r, echo = F}
 rm(list=ls(all=TRUE))
-#```
 
 # ===== User variables =====
 
-#```{r, echo=T}
 # parameter of interest
-param <- "NO3"
+param <- "no3"
 
 # river length cells to discretize
 

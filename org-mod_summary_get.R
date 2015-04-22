@@ -21,7 +21,7 @@ library(xlsx)
 output.vars <- c("Q_gw", "Q_dstream", "se_Q_gw", "se_Q_gw_noCg")
 run.ids <- 1:13
 spacing <- 1000
-model.output.date <- "20150419"
+model.output.date <- "20150422"
 daily.flow.col <- 3
 zero.neg.qg <- T
 

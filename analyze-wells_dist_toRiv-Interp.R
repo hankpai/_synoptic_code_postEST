@@ -3,20 +3,20 @@
 # started 6/13/2014
 # last edit: 12/28/2014
 
-
 library(spatstat)
 library(rgdal)
 
-
 rm(list=ls(all=TRUE))
 
+param <- "no3"
+
 # USER INPUT
-river.buffer.m <- 100
+river.buffer.m <- 200
 #well.fn <- "SpecificConductivity_gw_After2000.csv"
 #well.fn <- "SpecificConductivity_gw_forHenry.csv"
 #well.fn <- "gama_SC_merced.csv"
 well.fn <- "SpCond_200cellSize.csv"
-
+well.fn <- "no3_interp_200.csv"
 
 # defining utm window
 # define UTM window
@@ -25,25 +25,30 @@ well.fn <- "SpCond_200cellSize.csv"
 x.range <- c(650000, 770000)
 y.range <- c(4060000, 4170000)
 
+xy.names <- c("x_coordinate", "y_coordinate")
+#xy.names <- c("x_coord", "y_coord")
 
 dat.window <- owin(x.range, y.range)
 
 # getting well spcond data
 well.dir <- "D:/hank/btsync/hank_work/synoptic/data/groundwater/revision2_gw_interpSC/"
+well.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/auxilary/groundwater/20150422-gw_spcond/"
+well.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/auxilary/groundwater/20150421-gw_no3/"
 well.fullfn <- paste(well.dir, well.fn, sep = "")
 well.dat <- read.table(well.fullfn, sep = ",", header = T, as.is = T, 
                        quote = "")
 
 # getting merced river line spatial data
 riv.dir <- "D:/hank/btsync/hank_work/synoptic/data/maps/gEarth/"
+riv.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/auxilary/river_map/gEarth/"
 riv.fn <- "merced_riv_utm-synoptic.csv"
 riv.fullfn <- paste(riv.dir, riv.fn, sep = "")
 riv.dat <- read.table(riv.fullfn, sep = ",", header = T, as.is = T)
 
-well.x <- well.dat[, "x_coordinate"]
-well.y <- well.dat[, "y_coordinate"]
+well.x <- well.dat[, xy.names[1]]
+well.y <- well.dat[, xy.names[2]]
 
-well.utm <- well.dat[, c("x_coordinate", "y_coordinate")]
+well.utm <- well.dat[, xy.names]
 
 
 # creating river line
@@ -98,15 +103,16 @@ plot(riv.dat, type = "l",
 
 points(well.x, well.y, col = "black", pch = 20)
 
-points(well.proj.dist.filt[, "x_coordinate"], 
-       well.proj.dist.filt[, "y_coordinate"], 
+points(well.proj.dist.filt[, xy.names[1]], 
+       well.proj.dist.filt[, xy.names[2]], 
        col = "red", pch = 20)
 
 out.str.date <- strftime(Sys.Date(), "%Y%m%d")
 
-out.fn <- paste(out.str.date, "-well_SC-buffer", river.buffer.m, ".csv", 
-                sep = "")
-out.dir <- "D:/hank/btsync/hank_work/synoptic/data/groundwater/"
+out.fn <- paste(out.str.date, "-well_interp_", param, "-buffer", river.buffer.m,
+                ".csv", sep = "")
+
+out.dir <- well.dir
 
 out.fullfn <- paste(out.dir, out.fn, sep = "")
 

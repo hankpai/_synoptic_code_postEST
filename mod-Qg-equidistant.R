@@ -126,25 +126,25 @@ large.structs.dat <- read.table(large.structs.fullfn, sep = ",", as.is = T,
                                 header = T)
 
 # gw sc well data
-gw.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/auxilary/groundwater/20150302-gw_spcond/"
+gw.dir <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/auxilary/groundwater/20150422-gw_spcond/"
 
-gw.closest.sc.fn <- "20150303-well_SC_to_river_segments-closest.csv" 
+gw.closest.sc.fn <- "20150422-well_SC_to_river_segments-closest.csv" 
 gw.closest.sc.fullfn <- paste(gw.dir, gw.closest.sc.fn, sep = "")
 gw.closest.sc.dat <- read.table(gw.closest.sc.fullfn, sep = ",", as.is = T, 
                                 header = T)
 
-gw.avgidw.sc.fn <- "20150303-well_SC_to_river_segments-closest_n3-avg_idw.csv"
+gw.avgidw.sc.fn <- "20150422-well_SC_to_river_segments-closest_n3-avg_idw2.csv"
 gw.avgidw.sc.fullfn <- paste(gw.dir, gw.avgidw.sc.fn, sep = "")
 gw.avgidw.sc.dat <- read.table(gw.avgidw.sc.fullfn, sep = ",", as.is = T, 
                                header = T)
 
-gw.interp.sc.fn <- "20150320-well_SC_to_river_segments-interp_avg.csv"
+gw.interp.sc.fn <- "20150422-well_SC_to_river_segments-interp_avg.csv"
 gw.interp.sc.fullfn <- paste(gw.dir, gw.interp.sc.fn, sep = "")
 gw.interp.sc.dat <- read.table(gw.interp.sc.fullfn, sep = ",", as.is = T, 
                                header = T)
 
 # stats directory
-gw.stats.fn <- "20150130-unique_well_SC_stats-buffer5000-n5.csv"
+gw.stats.fn <- "20150422-unique_well_SC_stats-buffer5000-n5.csv"
 gw.stats.fullfn <- paste(gw.dir, gw.stats.fn, sep = "")
 gw.stats.dat <- read.table(gw.stats.fullfn, sep = ",", as.is = T, header = T)
 
@@ -222,6 +222,10 @@ ByReach <- function(index, slopes.dat, slope.name, ustream.name, dstream.name,
     Q.g <- (Q.u * (C.u - C.d)) / (C.d - C.g)
     
     if (zero.neg.qg == T) {
+      if (length(Q.g) == 0){
+        browser()  
+      }
+      
       if (Q.g < 0) {
         Q.g <- 0
       }

@@ -23,7 +23,7 @@ station.method1 <- "daily"
 
 # model parameters
 spacing <- 1000
-model.output.date <- "20150419"
+model.output.date <- "20150422"
 zero.neg.qg <- T
 
 # model methods
@@ -48,7 +48,7 @@ mod.qg.dir1 <- "D:/hank/Dropbox/_research_working_branch/_synoptic_postEST/data/
 mod.qg.dir2 <- paste(model.output.date, "-spacing_", spacing, "/_mod_summary/", 
                      sep = "")
 mod.qg.dir3 <- paste(mod.qg.dir1, mod.qg.dir2, sep = "")
-mod.qg.fn <- "20150420-Q_gw-all-segs-summary.csv"
+mod.qg.fn <- "20150422-Q_gw-all-segs-summary.csv"
 mod.qg.fullfn <- paste(mod.qg.dir3, mod.qg.fn, sep = "")
 
 mod.qg.dat <- read.table(mod.qg.fullfn, sep = ",", as.is = T, header = T)
